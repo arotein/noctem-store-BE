@@ -8,13 +8,21 @@
 4. Spring Boot 기반의 백엔드 서버
 5. Java 11
 
+### Feature
+
+1. 유저 페이지와 관리자 페이지를 구현하였습니다.
+2. 음료가 제조되기 전이면 언제든지 주문취소가 가능합니다.
+3. 주문 시 실시간으로 예상 대기시간과 순번이 업데이트됩니다.
+
 ## ☕ Demo
 
 - User Service
 
   > User Service는 모바일로 접속하시는 것을 추천드립니다.
   > 
-  > 위치 정보 이용에 동의해주시면 원활한 이용이 가능합니다.
+  > 위치 정보 이용에 동의해주시면 원활한 이용이 가능합니다. (위치 정보에 동의하지 않을 시 매장정보를 조회할 수 없습니다.)
+  > 
+  > 음료주문은 본점으로 해주세요.
   >
   > https://noctem-user1-fe.vercel.app/
 
@@ -32,9 +40,9 @@
   > https://noctem-admin-fe.vercel.app/
   >
   > ※ Admin Service Test Account  
-  > | ID | PW |
-  > |--- |--- |
-  > | noctem1 | noctem |
+  > | ID | PW | 지점 |
+  > |--- |--- |--- |
+  > | noctem1 | noctem | 본점 |
 
 ## ☕ Repository URL
 
@@ -78,12 +86,13 @@
 
 ![](./img/architecture.png)
 
-### 특징
+### Feature
 
 - MicroService Architecture
 - Spring WebFlux로 실시간 SSE 알림 구현
 - Spring Batch로 통계데이터 API 응답 속도 개선
 - Kafka로 서비스간 비동기 통신
+- Redis로 주문 취소관련 동시성이슈 해결
 - 각 서버는 Docker로 컨테이너화시켜 배포
 - Prometheus, Grafana로 서버 모니터링
 
@@ -91,12 +100,12 @@
 
 ![](./img/CICD.png)
 
-### 특징
+### Feature
 
 - Docker 및 Jenkins를 이용하여 빌드/배포 자동화
 - Slack 연동을 통해 팀원간 빌드/배포 상태 공유
 
-## ☕ 사용 기술
+## ☕ Skills
 
 ### Frontend
 
