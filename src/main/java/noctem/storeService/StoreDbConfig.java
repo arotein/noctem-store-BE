@@ -2,22 +2,22 @@ package noctem.storeService;
 
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
+import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
-import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
-import java.util.HashMap;
-import java.util.Map;
 
 @Configuration
 @EnableTransactionManagement
@@ -25,40 +25,46 @@ import java.util.Map;
 @EnableJpaRepositories(
         entityManagerFactoryRef = "storeEntityManager",
         transactionManagerRef = "storeTransactionManager",
-        basePackages = "noctem.storeService.store.domain.repository"
+        basePackages = {"noctem.storeService.store.domain.repository",
+                "noctem.storeService.global.security"}
 )
 public class StoreDbConfig {
-    private final Environment env;
-
     @Primary
     @Bean
     @ConfigurationProperties(prefix = "spring.datasource-store")
-    public DataSource storeDataSource() {
-        return DataSourceBuilder.create().type(HikariDataSource.class).build();
+    public DataSourceProperties storeDataSourceProperties() {
+        return new DataSourceProperties();
     }
 
     @Primary
     @Bean
-    public PlatformTransactionManager storeTransactionManager() {
-        JpaTransactionManager transactionManager = new JpaTransactionManager();
-        transactionManager.setEntityManagerFactory(storeEntityManager().getObject());
-        return transactionManager;
+    @ConfigurationProperties(prefix = "spring.datasource-store.jpa")
+    public JpaProperties storeJpaProperties() {
+        return new JpaProperties();
     }
 
     @Primary
     @Bean
-    public LocalContainerEntityManagerFactoryBean storeEntityManager() {
-        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
-        em.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
-        em.setDataSource(storeDataSource());
-        em.setPackagesToScan("noctem.storeService.store.domain.entity");
+    @ConfigurationProperties(prefix = "spring.datasource-store.configuration")
+    public DataSource storeDataSource(@Qualifier("storeDataSourceProperties") DataSourceProperties dataSourceProperties) {
+        return dataSourceProperties.initializeDataSourceBuilder().type(HikariDataSource.class).build();
+    }
 
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("hibernate.physical_naming_strategy", "noctem.storeService.global.common.SnakeCaseNamingStrategy");
-        properties.put("hibernate.hbm2ddl.auto", env.getProperty("spring.datasource-store.hbm2ddl.auto"));
-        properties.put("hibernate.dialect", "org.hibernate.dialect.MySQL8Dialect");
-        properties.put("hibernate.format_sql", true);
-        em.setJpaPropertyMap(properties);
-        return em;
+    @Primary
+    @Bean
+    public LocalContainerEntityManagerFactoryBean storeEntityManagerFactory(EntityManagerFactoryBuilder builder,
+                                                                            @Qualifier("storeDataSource") DataSource dataSource,
+                                                                            @Qualifier("storeJpaProperties") JpaProperties jpaProperties) {
+        return builder.dataSource(dataSource)
+                .packages("noctem.storeService.store.domain.entity")
+                .persistenceUnit("storeEntityManager")
+                .properties(jpaProperties.getProperties())
+                .build();
+    }
+
+    @Primary
+    @Bean
+    public PlatformTransactionManager storeTransactionManager(@Qualifier("storeEntityManagerFactory") EntityManagerFactory entityManagerFactory) {
+        return new JpaTransactionManager(entityManagerFactory);
     }
 }
