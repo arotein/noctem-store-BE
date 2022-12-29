@@ -20,12 +20,11 @@ import javax.sql.DataSource;
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
-        entityManagerFactoryRef = "purchaseEntityManager",
+        entityManagerFactoryRef = "purchaseEntityManagerFactory",
         transactionManagerRef = "purchaseTransactionManager",
         basePackages = "noctem.storeService.purchase.domain.repository"
 )
 public class PurchaseDbConfig {
-
     @Bean
     @ConfigurationProperties(prefix = "spring.datasource-purchase")
     public DataSourceProperties purchaseDataSourceProperties() {
@@ -39,7 +38,6 @@ public class PurchaseDbConfig {
     }
 
     @Bean
-    @ConfigurationProperties(prefix = "spring.datasource-purchase.configuration")
     public DataSource purchaseDataSource(@Qualifier("purchaseDataSourceProperties") DataSourceProperties dataSourceProperties) {
         return dataSourceProperties.initializeDataSourceBuilder().type(HikariDataSource.class).build();
     }

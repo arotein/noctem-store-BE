@@ -1,7 +1,6 @@
 package noctem.storeService;
 
 import com.zaxxer.hikari.HikariDataSource;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
@@ -21,12 +20,10 @@ import javax.sql.DataSource;
 
 @Configuration
 @EnableTransactionManagement
-@RequiredArgsConstructor
 @EnableJpaRepositories(
-        entityManagerFactoryRef = "storeEntityManager",
+        entityManagerFactoryRef = "storeEntityManagerFactory",
         transactionManagerRef = "storeTransactionManager",
-        basePackages = {"noctem.storeService.store.domain.repository",
-                "noctem.storeService.global.security"}
+        basePackages = "noctem.storeService.store.domain.repository"
 )
 public class StoreDbConfig {
     @Primary
@@ -45,7 +42,6 @@ public class StoreDbConfig {
 
     @Primary
     @Bean
-    @ConfigurationProperties(prefix = "spring.datasource-store.configuration")
     public DataSource storeDataSource(@Qualifier("storeDataSourceProperties") DataSourceProperties dataSourceProperties) {
         return dataSourceProperties.initializeDataSourceBuilder().type(HikariDataSource.class).build();
     }
