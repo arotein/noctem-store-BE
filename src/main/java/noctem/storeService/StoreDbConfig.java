@@ -42,19 +42,18 @@ public class StoreDbConfig {
 
     @Primary
     @Bean
-    public DataSource storeDataSource(@Qualifier("storeDataSourceProperties") DataSourceProperties dataSourceProperties) {
-        return dataSourceProperties.initializeDataSourceBuilder().type(HikariDataSource.class).build();
+    public DataSource storeDataSource() {
+        return storeDataSourceProperties().initializeDataSourceBuilder().type(HikariDataSource.class).build();
     }
 
+    @Qualifier("storeEntityManagerFactory")
     @Primary
     @Bean
-    public LocalContainerEntityManagerFactoryBean storeEntityManagerFactory(EntityManagerFactoryBuilder builder,
-                                                                            @Qualifier("storeDataSource") DataSource dataSource,
-                                                                            @Qualifier("storeJpaProperties") JpaProperties jpaProperties) {
-        return builder.dataSource(dataSource)
+    public LocalContainerEntityManagerFactoryBean storeEntityManagerFactory(EntityManagerFactoryBuilder builder) {
+        return builder.dataSource(storeDataSource())
                 .packages("noctem.storeService.store.domain.entity")
                 .persistenceUnit("storeEntityManager")
-                .properties(jpaProperties.getProperties())
+                .properties(storeJpaProperties().getProperties())
                 .build();
     }
 
