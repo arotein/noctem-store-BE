@@ -38,18 +38,17 @@ public class PurchaseDbConfig {
     }
 
     @Bean
-    public DataSource purchaseDataSource(@Qualifier("purchaseDataSourceProperties") DataSourceProperties dataSourceProperties) {
-        return dataSourceProperties.initializeDataSourceBuilder().type(HikariDataSource.class).build();
+    public DataSource purchaseDataSource() {
+        return purchaseDataSourceProperties().initializeDataSourceBuilder().type(HikariDataSource.class).build();
     }
 
+    @Qualifier("purchaseEntityManagerFactory")
     @Bean
-    public LocalContainerEntityManagerFactoryBean purchaseEntityManagerFactory(EntityManagerFactoryBuilder builder,
-                                                                               @Qualifier("purchaseDataSource") DataSource dataSource,
-                                                                               @Qualifier("purchaseJpaProperties") JpaProperties jpaProperties) {
-        return builder.dataSource(dataSource)
+    public LocalContainerEntityManagerFactoryBean purchaseEntityManagerFactory(EntityManagerFactoryBuilder builder) {
+        return builder.dataSource(purchaseDataSource())
                 .packages("noctem.storeService.purchase.domain.entity")
                 .persistenceUnit("purchaseEntityManager")
-                .properties(jpaProperties.getProperties())
+                .properties(purchaseJpaProperties().getProperties())
                 .build();
     }
 
